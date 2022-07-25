@@ -1,16 +1,10 @@
 # note_app
 
-A new Flutter project.
+A Flutter Project, Note App with modern design
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+ A Simple Modern UI design where people can take notes with Text, Audio and Image and orginise notes within folders.
 
-A few resources to get you started if this is your first Flutter project:
+For now only a local [DATABASE](https://pub.dev/packages/hive) is used to store datas; [Hive](https://pub.dev/packages/hive)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
