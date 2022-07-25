@@ -17,7 +17,7 @@ class HomePage extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              // Widget that stands ad gradient container
+              // Widget that stands as gradient container
               widgetTop(),
               //these are the widgets on tap bar
               widgetTopAppBarWidgets(context),

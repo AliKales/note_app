@@ -29,14 +29,18 @@ class HomePageBody extends StatefulWidget {
 class _HomePageBodyState extends State<HomePageBody> {
   final ScrollController _sC = ScrollController();
 
+  ///here it collects widgets of folder which is opened
   List<Widget> folderWidgets = [];
 
+  ///When user opens a new folder, it saves it here to manage folder edits etc.
   MFolder? lastFolder;
 
+  ///it saves max scroll pos when user open a new folder
   double scrollPos = 0;
 
   @override
   Widget build(BuildContext context) {
+    ///here we gets nAFS (Notes And Folders) from Provider
     List nAFs = Provider.of<PNotes>(context).nAFs;
 
     return Expanded(
@@ -46,14 +50,19 @@ class _HomePageBodyState extends State<HomePageBody> {
           overscroll.disallowIndicator();
           return true;
         },
+
+        ///here We have a ListView in Horizontal way to show  nAFS
         child: ListView(
           controller: _sC,
           scrollDirection: Axis.horizontal,
           physics: const NeverScrollableScrollPhysics(),
           children: [
+            ///This widgets shows first nAFS so it's always stabile here as First Widget of ListView
             SizedBox(
                 width: MediaQuery.of(context).size.width,
-                child: widgetListViewNotesAndFolders(nAFs, false)),
+                child: widgetListViewNotesAndFolders(nAFs)),
+
+            ///Then we add folders that opened from user but scrollable is false. it works with only clicks
             ...folderWidgets
           ],
         ),
@@ -142,32 +151,40 @@ class _HomePageBodyState extends State<HomePageBody> {
               ],
             ),
             widgetListViewNotesAndFolders(
-                HiveDatabase().getTitles(folder.nAFIds ?? []), true),
+                HiveDatabase().getTitles(folder.nAFIds ?? [])),
           ],
         ),
       ),
     );
   }
 
-  Widget widgetListViewNotesAndFolders(List<dynamic> nAFs, bool isFromFolder) {
+  ///Here we get nAFS to show on Vertical direction.
+  ///It shows either Note Widget or Folder Widget
+  Widget widgetListViewNotesAndFolders(List<dynamic> nAFs) {
     return ListView.builder(
+      ///Since we use a custom bottom nav bar so we have to make a space at bottom
+      ///thats why we make it +1 to put a space at bottom
       itemCount: nAFs.length + 1,
       shrinkWrap: true,
       itemBuilder: (_, index) {
-        //Widget of notes' titles
+        ///Spacer at bottom
         if (index == nAFs.length) {
           return SimpleUIs().sizedBoxAsBottomNavBar();
         }
 
         var nAF = nAFs[index];
 
+        ///Return Note Widget
         if (nAF.itemType == ItemType.note) {
           return WidgetNotePicker(
             note: nAFs[index],
             onLongPress: () => onLongPress(nAF),
-            onTap: () => onTapNote(nAF, isFromFolder),
+            onTap: () => onTapNote(nAF),
           );
-        } else {
+        }
+
+        ///Return folder Widget
+        else {
           return WidgetFolderPicker(
             folder: nAF,
             onTap: () => onTapFolder(nAF),
@@ -184,31 +201,40 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
   //FUNCTIONS
 
-  Future onTapNote(MNote note, bool isFromFolder) async {
+  ///This func runs on a note click
+  Future onTapNote(MNote note) async {
+    ///Here it checks if note's expiration date is not a null~
     if (note.expirationDate != null) {
+      ///~and if it s not null than it checks if note is expired, if yes it returns back
       if (Funcs().checkExpiration(note.expirationDate)) {
         Funcs().showSnackBar(context, "This note is not available anymore!");
         return;
       }
     }
+
+    ///Here it checks if the note has a password~
     if (note.password != null) {
+      ///~here we show a Dialog and want user to type a password and return it~
       String? text = await SimpleUIs.showTextInput(
           context: context, label: "Password", buttonText: "Enter");
 
+      ///~here we check if user typed nothing and if password and user type doesnt match
       if (text == null || text.trim() != note.password) {
         if (text != null) Funcs().showSnackBar(context, "Wrong Password");
         return;
       }
     }
+
+    ///here we put Widgets in layer list and then push to NoteDetailsPage
     Provider.of<PLayers>(context, listen: false).layersNoteDetailsPage =
         note.layers ?? [];
-    await Funcs().navigatorPush(
-        context, NoteDetailsPage(note: note, isFromFolder: isFromFolder));
+    await Funcs().navigatorPush(context, NoteDetailsPage(note: note));
 
     setState(() {});
   }
 
   Future onTapFolder(MFolder folder) async {
+    ///Same password and expiration control as we do it above with Note
     if (folder.expirationDate != null) {
       if (Funcs().checkExpiration(folder.expirationDate)) {
         Funcs().showSnackBar(context, "This folder is not available anymore!");
@@ -225,14 +251,18 @@ class _HomePageBodyState extends State<HomePageBody> {
       }
     }
 
+    ///Here we define the opened folder to use in future features
     lastFolder = folder;
 
+    ///we add a this folder to widgetFolder
     folderWidgets.add(widgetFolder(folder));
 
+    ///here we want to check if First nAFS are shown or not
     shownFolderCounter++;
 
     setState(() {});
 
+    ///and then we anime the list view to folder in horizontal way
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (scrollPos == 0) scrollPos = _sC.position.maxScrollExtent;
 
@@ -241,6 +271,9 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
   }
 
+  ///On Long Press, a ModaltBottomSheet is showsn with Button"Delete" to ask user what to do,
+  ///For now it considers only delete option
+  ///but many features can be added in future
   Future onLongPress(nAF) async {
     SimpleUIs.showCustomModalBottomSheet(
       context: context,
@@ -259,15 +292,21 @@ class _HomePageBodyState extends State<HomePageBody> {
     );
   }
 
+  ///Here a Dialog is shown when user longPress a note or folder to delete
+  ///and theres a button to make user to delere if he is sure~
   void deleteNAF(nAF) async {
     Navigator.pop(context);
     bool result = await SimpleUIs.showDialogYesNo(context: context);
 
+    ///~and if result is yes from dialog which means Yes was clicked,
+    ///then we delete it from Provider and HiveDatabase
     if (result) {
       Provider.of<PNotes>(context, listen: false).deleteNAF(nAF);
     }
   }
 
+  ///If The IconButton(more_vert_sharp) next to title is clicked
+  ///then we show a custom modal bottom sheet to ask user what to do~
   void onMoreClicked() {
     SimpleUIs.showCustomModalBottomSheet(
       context: context,
@@ -275,6 +314,8 @@ class _HomePageBodyState extends State<HomePageBody> {
     );
   }
 
+  ///~and here we let user to choose what to do in a StatefulBuilder
+  ///because we have Switchs here to update on click
   Widget _customModalBottomSheet(context) {
     String? description;
     return StatefulBuilder(builder: (context, sT) {

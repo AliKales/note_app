@@ -19,12 +19,9 @@ import 'package:provider/provider.dart';
 import '../library/provider/p_audio_player.dart';
 
 class NoteDetailsPage extends StatefulWidget {
-  const NoteDetailsPage(
-      {Key? key, required this.note, this.isFromFolder = false})
-      : super(key: key);
+  const NoteDetailsPage({Key? key, required this.note}) : super(key: key);
 
   final MNote note;
-  final bool isFromFolder;
 
   @override
   State<NoteDetailsPage> createState() => _NoteDetailsPageState();
@@ -180,7 +177,7 @@ class _NoteDetailsPageState extends State<NoteDetailsPage> {
               onPressed: () {
                 Provider.of<PLayers>(context)
                     .removeLayersNoteDetailsPage(layerImage);
-                    
+
                 pathsToDelete.add(layerImage.path);
               },
               icon:

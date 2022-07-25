@@ -19,6 +19,7 @@ class CustomBottomNavBar extends StatefulWidget {
 }
 
 class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
+  ///Here we define Childeren for Nav Bar
   final List<_ModelChild> _childeren = [
     _ModelChild(index: 0, iconData: Icons.note),
     _ModelChild(index: 1, iconData: Icons.note_add_rounded),
@@ -32,13 +33,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       height: kBottomNavigationBarHeight,
       width: double.maxFinite,
-      decoration: BoxDecoration(
-        border: Border.all(color: cGradientColor1, width: 2),
-        color: Colors.white,
-        borderRadius: const BorderRadius.all(
-          Radius.circular(cRadius),
-        ),
-      ),
+      decoration: _boxDecorationBottomNavBar(),
       child: Row(
         children: List.generate(
             _childeren.length, (index) => _child(_childeren[index])),
@@ -46,15 +41,20 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
     );
   }
 
+  BoxDecoration _boxDecorationBottomNavBar() {
+    return BoxDecoration(
+      border: Border.all(color: cGradientColor1, width: 2),
+      color: Colors.white,
+      borderRadius: const BorderRadius.all(
+        Radius.circular(cRadius),
+      ),
+    );
+  }
+
   Widget _child(_ModelChild modelChild) {
     return Expanded(
       child: InkWell(
-        onTap: () {
-          if (context.read<PAudioPlayer>().mAudioPlayer.isActive) return;
-
-          Provider.of<ProviderPages>(context, listen: false)
-              .changePage(modelChild.index);
-        },
+        onTap: () => childOnTap(modelChild),
         child: SizedBox(
           height: kBottomNavigationBarHeight,
           child: AnimatedContainer(
@@ -76,9 +76,19 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       ),
     );
   }
+
+  void childOnTap(_ModelChild modelChild) {
+    ///Here we check if Any audio is playing, if yes then we wont allow to change page
+    if (context.read<PAudioPlayer>().mAudioPlayer.isActive) return;
+
+    ///This Provider method notify if pageView has to change
+    Provider.of<ProviderPages>(context, listen: false)
+        .changePage(modelChild.index);
+  }
 }
 
 class _ModelChild {
+  ///[index] to understand which item it is
   final int index;
   final IconData iconData;
 

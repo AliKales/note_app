@@ -32,8 +32,6 @@ Future<void> main() async {
   await Hive.openBox("NAFs");
   await Hive.openBox("database");
 
-  // await Hive.box("firstNAFs").clear();
-  // await Hive.box("NAFs").clear();
 
   runApp(
     MultiProvider(
@@ -54,7 +52,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Note App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         iconTheme: const IconThemeData(color: Colors.grey),
